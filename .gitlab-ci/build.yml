@@ -1,0 +1,50 @@
+.'master | composer install': &composer_install
+  stage: build
+  image: composer
+  tags:
+    - composer
+  artifacts:
+    paths:
+      - vendor/
+  script:
+    - composer global require hirak/prestissimo
+    - composer install
+
+'master | composer install':
+  <<: *composer_install
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "web" && $CI_COMMIT_BRANCH == "master"'
+      changes:
+        - composer.json
+        - composer.lock
+
+'manual | composer install':
+  <<: *composer_install
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "master"'
+
+.template markup: &build-markup
+  stage: build
+  tags:
+    - markup
+  artifacts:
+    paths:
+      - $MARKUP_DIR/dist/
+  script:
+    - cd $MARKUP_DIR
+    - yarn
+    - npm run build:prod
+
+'master | build markup':
+  <<: *build-markup
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "web" && $CI_COMMIT_BRANCH == "master"'
+      changes:
+        - local/templates/.default/markup/src/**/*
+        - local/templates/.default/markup/*.json
+        - local/templates/.default/markup/*.js
+
+'manual | build markup':
+  <<: *build-markup
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "master"'

@@ -1,0 +1,44 @@
+'master | pull changes':
+  extends: .add_ssh
+  stage: pull
+  tags:
+    - markup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - ssh $DEV_USER@$DEV_HOST "cd $DEV_PROJECT_DIR && git pull"
+  only:
+    refs:
+      - master
+  except:
+    changes:
+      - composer.json
+      - composer.lock
+      - web
+  when: always
+
+.'master | git pull && unzip vendor': &pull_and_vendor
+  extends: .add_ssh
+  stage: pull
+  tags:
+    - markup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - zip -r vendor.zip vendor/
+    - scp -r ./vendor.zip $DEV_USER@$DEV_HOST:$DEV_PROJECT_DIR/
+    - ssh $DEV_USER@$DEV_HOST "cd $DEV_PROJECT_DIR && git pull"
+    - ssh $DEV_USER@$DEV_HOST "cd $DEV_PROJECT_DIR && rm -r old_vendor || true && mv vendor old_vendor || true && unzip vendor.zip || true && rm -rf vendor.zip || true"
+
+'master | git pull && unzip vendor':
+  <<: *pull_and_vendor
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "web" && $CI_COMMIT_BRANCH == "master"'
+      changes:
+        - composer.json
+        - composer.lock
+
+'manual | git pull && unzip vendor':
+  <<: *pull_and_vendor
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "master"'

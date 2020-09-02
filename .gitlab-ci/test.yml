@@ -1,0 +1,45 @@
+.check lint: &check_lint
+  image: composer
+  stage: test
+  tags:
+    - composer
+  script:
+    - make phplint
+
+'master | check lint':
+  <<: *check_lint
+  needs: ["master | composer install"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "web" && $CI_COMMIT_BRANCH == "master"'
+      changes:
+        - composer.json
+        - composer.lock
+
+'manual | check lint':
+  <<: *check_lint
+  needs: ["manual | composer install"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "master"'
+
+.check PSR-12: &check_psr
+  image: composer
+  stage: test
+  tags:
+    - composer
+  script:
+    - make phpcs
+
+'master | check PSR-12':
+  <<: *check_psr
+  needs: ["master | composer install"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "web" && $CI_COMMIT_BRANCH == "master"'
+      changes:
+        - composer.json
+        - composer.lock
+
+'manual | check PSR-12':
+  <<: *check_psr
+  needs: ["manual | composer install"]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "master"'

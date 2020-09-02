@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+use Future\Console\Import\AddNewElementFromCsv;
+use Future\Console\SetDefaultPrice;
+use Symfony\Component\Console\Application;
+
+set_time_limit(0);
+
+ini_set('mbstring.func_overload', 2);
+ini_set('memory_limit', '1024M');
+ini_set('mbstring.internal_encoding', 'UTF-8');
+
+$_SERVER['DOCUMENT_ROOT'] = __DIR__ . '/../sites/s1';
+$DOCUMENT_ROOT = $_SERVER['DOCUMENT_ROOT'];
+
+define('LANG', 's1');
+define('BX_UTF', true);
+define('NO_KEEP_STATISTIC', true);
+define('NOT_CHECK_PERMISSIONS', true);
+define('BX_BUFFER_USED', true);
+
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php';
+
+$app = new Application();
+
+$app->add(new SetDefaultPrice());
+$app->add(new AddNewElementFromCsv());
+
+$app->run();

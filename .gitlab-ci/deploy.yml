@@ -1,0 +1,28 @@
+.template master deploy markup: &template_master_deploy_markup
+  extends: .add_ssh
+  stage: deploy
+  tags:
+    - markup
+  variables:
+    GIT_STRATEGY: none
+    MARKUP_DIR: $MARKUP_DIR
+    DEV_USER: $DEV_USER
+    DEV_HOST: $DEV_HOST
+    DEV_PROJECT_DIR: $DEV_PROJECT_DIR
+  script:
+    - ssh $DEV_USER@$DEV_HOST "rm -rf $DEV_PROJECT_DIR/$MARKUP_DIR/dist/*"
+    - scp -Cr ./$MARKUP_DIR/dist/. $DEV_USER@$DEV_HOST:$DEV_PROJECT_DIR/$MARKUP_DIR/dist/
+
+'master | deploy markup':
+  <<: *template_master_deploy_markup
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "web" && $CI_COMMIT_BRANCH == "master"'
+      changes:
+        - local/templates/.default/markup/src/**/*
+        - local/templates/.default/markup/*.json
+        - local/templates/.default/markup/*.js
+
+'manual | deploy markup':
+  <<: *template_master_deploy_markup
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "master"'

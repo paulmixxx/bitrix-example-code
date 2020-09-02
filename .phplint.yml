@@ -1,0 +1,14 @@
+path: ./local/
+jobs: 10
+cache: var/.phplint.json
+extensions:
+  - php
+exclude:
+  - .git
+  - .idea
+  - bitrix
+  - uploud
+  - vendor
+  - old_vendor
+  - node_modules
+  - sites

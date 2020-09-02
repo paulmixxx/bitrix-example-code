@@ -1,0 +1,20 @@
+image: node:10
+
+stages:
+  - build
+  - test
+  - pull
+  - deploy
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - vendor
+    - $MARKUP_DIR/node_modules
+
+include:
+  - local: '/.gitlab-ci/before_script.yml'
+  - local: '/.gitlab-ci/build.yml'
+  - local: '/.gitlab-ci/test.yml'
+  - local: '/.gitlab-ci/pull.yml'
+  - local: '/.gitlab-ci/deploy.yml'
